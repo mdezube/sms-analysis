@@ -27,7 +27,7 @@ Note: none of your data is modified nor sent anywhere during execution
 # Quick start
 1. Start the IPython notebook like so: `jupyter notebook sms_analysis.ipynb`
 2. Under the menu choose Cell --> Run All
-3. Edit the `EXCHANGED_WITH_CONTACT_NAME` and `ROOT_WORD` in the last cell to alter the visualization and then re-run
+3. Edit the `CONTACT_NAME` and `ROOT_WORD` in the last cell to alter the visualization and then re-run
 that cell, under menu choose: Cell --> Run Cell
 
 Contact michaeldezube at gmail com with questions
