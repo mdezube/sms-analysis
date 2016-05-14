@@ -69,7 +69,8 @@ def __get_message_id_joined_to_phone_or_email():
 
     # Clean it up a bit.
     message_id_joined_to_phone_or_email['country'] = message_id_joined_to_phone_or_email['country'].str.lower()
-    message_id_joined_to_phone_or_email['phone_or_email'] = message_id_joined_to_phone_or_email.apply(__strip_initial_1_in_phone, axis=1)
+    message_id_joined_to_phone_or_email['phone_or_email'] = message_id_joined_to_phone_or_email.apply(
+        __strip_initial_1_in_phone, axis=1)
     return message_id_joined_to_phone_or_email
 
 
@@ -142,7 +143,7 @@ def get_address_book():
     ''', address_con)
 
     # Clean it up a bit.
-    address_book = address_book[(address_book['property'] == 4) | (address_book['property'] == 3)]  # Of type phone or email.
+    address_book = address_book[(address_book['property'] == 4) | (address_book['property'] == 3)]  # Of type phone or email
     address_book['phone_or_email'] = address_book['phone_or_email'].str.replace(r'[()\- ]', '')
     address_book['phone_or_email'] = address_book.apply(__strip_initial_1_in_phone, axis=1)
 
@@ -189,7 +190,7 @@ def get_merged_message_df(messages_df, address_book, print_debug=False):
                              indicator='merge_chat_with_address_and_messages')
 
 
-def collapse_first_last_company_columns(df):
+def _collapse_first_last_company_columns(df):
     assert 'first' in df.columns, 'Column "first" did not exist in dataframe'
     assert 'last' in df.columns, 'Column "last" did not exist in dataframe'
     assert 'company' in df.columns, 'Column "company" did not exist in dataframe'
@@ -201,3 +202,58 @@ def collapse_first_last_company_columns(df):
 
     df['full_name'] = df.apply(create_full_name, axis=1)
     df.drop(['first', 'last', 'company'], inplace=True, axis=1)
+
+
+def get_cleaned_fully_merged_messages():
+    """
+        Merges the message dataframe with the address book dataframe to return a single dataframe that contains all
+        messages with detailed information (e.g. name, company, birthday) about the sender.
+
+    Returns:
+        a dataframe that contained all messages with info about their senders
+    """
+    # LOAD MESSAGE DATAFRAME
+    messages_df = get_message_df()
+    # Drop some columns that we don't use now, but may in the future.
+    messages_df.drop(['version', 'is_emote', 'is_read', 'is_system_message',
+                      'is_service_message', 'has_dd_results'],
+                       inplace=True, axis=1)
+    print 'Loaded {0:,} messages.  Printing first row:'.format(messages_df.shape[0])
+    display(messages_df.head(1))
+
+    # LOAD ADDRESS BOOK DATAFRAME
+    address_book_df = get_address_book()
+    # Drop a column that we don't use now, but may in the future.
+    address_book_df = address_book_df.drop('property', axis=1)
+    print 'Loaded {0:,} contacts.  Printing first row:'.format(address_book_df.shape[0])
+    display(address_book_df.head(1))
+
+    # JOIN THE MESSAGE AND ADDRESS BOOK DATAFRAMES
+    fully_merged_messages_df = get_merged_message_df(messages_df, address_book_df)
+    # Drop a few columns we don't care about for now
+    fully_merged_messages_df = fully_merged_messages_df.drop(['handle_id',
+                                                              'country_messages_df',
+                                                              'country_other_join_tbl',
+                                                              'service_messages_df',
+                                                              'service_other_join_tbl'],
+                                                               axis=1)
+
+    print 'Messages with phone numbers not found in address book: {0:,}'.format(
+        fully_merged_messages_df[fully_merged_messages_df.merge_chat_with_address != 'both'].shape[0])
+    print ('Messages loaded: {0:,} (this is larger than the length of the messages table as certain '
+           'message IDs were sent in group messages.)').format(fully_merged_messages_df.shape[0])
+
+    # Drop some columns that we're no longer going to need.
+    fully_merged_messages_df = fully_merged_messages_df.drop(['merge_chat_with_address',
+                                                              'merge_chat_with_address_and_messages'],
+                                                               axis=1)
+
+    # Merge the first name, last name and company column together to create a "full_name" column, runs in place.
+    _collapse_first_last_company_columns(fully_merged_messages_df)
+    _collapse_first_last_company_columns(address_book_df)
+
+    print 'Printing first row of merged message dataframe:'
+    display(fully_merged_messages_df.head(1))
+    print 'Printing first row of address book with full name column (merged first name/last name/company):'
+    display(address_book_df.head(1))
+    return fully_merged_messages_df, address_book_df
