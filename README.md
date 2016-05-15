@@ -1,7 +1,10 @@
 # sms-analysis
 Python/IPython code to analyze one's text messages.  Intended to work out of the box.
 <br><br>
-Author: Mike Dezube \<michael dezube at gmail dot com\>
+Author: Michael Dezube \<michael dezube at gmail dot com\>
+
+For further discussions:
+[![Join the chat at https://gitter.im/mdezube/sms-analysis](https://badges.gitter.im/mdezube/sms-analysis.svg)](https://gitter.im/mdezube/sms-analysis?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
 
 # Overview of code
 This code will:
