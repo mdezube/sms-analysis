@@ -19,12 +19,6 @@ from IPython.display import display
 
 BASE_DIR = '~/Library/Application Support/MobileSync/Backup'
 MESSAGE_DB = '3d0d7e5fb2ce288813306e4d4636395e047a3d28'    key_fields = ['message_id', 'chat_id', 'phone_or_email']
-    duplicates = address_joined_with_message_id.duplicated(subset=key_fields,
-                                                           keep=False)
-    error_message = ("message_id, chat_id and phone_or_email "
-                     "do not form a composite key")
-    assert sum(duplicates) == 0, error_message
-
 ADDRESS_DB = '31bb7ba8914766d4ba40d6dfb6113c8b614be442'
 
 # START SIMPLE HELPER METHODS
