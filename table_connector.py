@@ -18,7 +18,7 @@ import sqlite3
 from IPython.display import display
 
 BASE_DIR = '~/Library/Application Support/MobileSync/Backup'
-MESSAGE_DB = '3d0d7e5fb2ce288813306e4d4636395e047a3d28'    key_fields = ['message_id', 'chat_id', 'phone_or_email']
+MESSAGE_DB = '3d0d7e5fb2ce288813306e4d4636395e047a3d28'
 ADDRESS_DB = '31bb7ba8914766d4ba40d6dfb6113c8b614be442'
 
 # START SIMPLE HELPER METHODS
