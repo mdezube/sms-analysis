@@ -204,7 +204,7 @@ def _collapse_first_last_company_columns(df):
     df.drop(['first', 'last', 'company'], inplace=True, axis=1)
 
 
-def get_cleaned_fully_merged_messages():
+def main():
     """
         Merges the message dataframe with the address book dataframe to return a single dataframe that contains all
         messages with detailed information (e.g. name, company, birthday) about the sender.
@@ -257,3 +257,6 @@ def get_cleaned_fully_merged_messages():
     print 'Printing first row of address book with full name column (merged first name/last name/company):'
     display(address_book_df.head(1))
     return fully_merged_messages_df, address_book_df
+
+if __name__=="__main__":
+    print main()
