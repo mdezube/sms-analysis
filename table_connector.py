@@ -18,7 +18,13 @@ import sqlite3
 from IPython.display import display
 
 BASE_DIR = '~/Library/Application Support/MobileSync/Backup'
-MESSAGE_DB = '3d0d7e5fb2ce288813306e4d4636395e047a3d28'
+MESSAGE_DB = '3d0d7e5fb2ce288813306e4d4636395e047a3d28'    key_fields = ['message_id', 'chat_id', 'phone_or_email']
+    duplicates = address_joined_with_message_id.duplicated(subset=key_fields,
+                                                           keep=False)
+    error_message = ("message_id, chat_id and phone_or_email "
+                     "do not form a composite key")
+    assert sum(duplicates) == 0, error_message
+
 ADDRESS_DB = '31bb7ba8914766d4ba40d6dfb6113c8b614be442'
 
 # START SIMPLE HELPER METHODS
@@ -83,9 +89,12 @@ def __get_address_joined_with_message_id(address_book):
     )
     address_joined_with_message_id = address_joined_with_message_id.drop(['ROWID'], axis=1)
 
-    # Confirm that message_id, chat_id and phone_or_email form a composite key
-    assert sum(address_joined_with_message_id.duplicated(subset=['message_id', 'chat_id', 'phone_or_email'],
-                                                         keep=False)) == 0
+    key_fields = ['message_id', 'chat_id', 'phone_or_email']
+    duplicates = address_joined_with_message_id.duplicated(subset=key_fields,
+                                                           keep=False)
+    error_message = ("message_id, chat_id and phone_or_email "
+                     "do not form a composite key")
+    assert sum(duplicates) == 0, error_message
 
     return address_joined_with_message_id
 
