@@ -86,9 +86,10 @@ def __get_address_joined_with_message_id(address_book):
     key_fields = ['message_id', 'chat_id', 'phone_or_email']
     duplicates = address_joined_with_message_id.duplicated(subset=key_fields,
                                                            keep=False)
-    error_message = ("message_id, chat_id and phone_or_email "
+    error_message = ("WARNING: tuple (message_id, chat_id, and phone_or_email) "
                      "do not form a composite key")
-    assert sum(duplicates) == 0, error_message
+    if not sum(duplicates) == 0:
+        print error_message
 
     return address_joined_with_message_id
 
