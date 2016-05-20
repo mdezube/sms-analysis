@@ -261,10 +261,10 @@ def get_cleaned_fully_merged_messages():
 
 if __name__=="__main__":
     messages, addresses = get_cleaned_fully_merged_messages()
-    if len(sys.arv)>1:
+    if len(sys.argv) > 1:
         file_path = sys.argv[1]
-        messages.to_csv(file_path+"messages.csv")
-        addresses.to_csv(file_path+"addresses.csv")
+        messages.to_csv(file_path + "messages.csv")
+        addresses.to_csv(file_path + "addresses.csv")
     else:
         print messages
         print addresses
