@@ -27,6 +27,9 @@ Note: none of your data is modified nor sent anywhere during execution
     Windows.
 5. Internet connection to load the google visualization API, it's a very small file though
 
+## Dependencies easy install
+Run pip install -r requirements.txt
+
 # Quick start
 1. Start the IPython notebook like so: `jupyter notebook sms_analysis.ipynb`
 2. Under the menu choose Cell --> Run All
