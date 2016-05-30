@@ -1,0 +1,59 @@
+<html>
+<head>
+    <script type="text/javascript">
+    var chart;
+    var data;
+    var options = {
+        wordtree: {
+            format: 'implicit',
+            word: '${root_word}',
+            type: '${tree_type}',
+        }
+    };
+
+    function initChart() {
+        data = google.visualization.arrayToDataTable(${json_formatted});
+        chart = new google.visualization.WordTree(document.getElementById('wordtree_basic'));
+    }
+
+    function drawChart() {
+        chart.draw(data, options);
+    }
+
+    function setRootWordFromForm() {
+        options.wordtree.word = document.getElementById('root_word').value;
+        drawChart();
+    }
+
+    // Is it the first time we're being loaded?  We have to check as IPython seems to do
+    // some tricky things where it holds around loaded JS which causes an error if we
+    // attempt to load Google's libraries twice.
+    if (typeof(google) == 'undefined') {
+        var script = document.createElement('script');
+        script.src = 'https://www.gstatic.com/charts/loader.js';
+        var head = document.getElementsByTagName('head')[0];
+        script.onload = function() {
+            google.charts.load('current', {
+                packages: ['wordtree']
+            });
+            google.charts.setOnLoadCallback(function() {
+                initChart();
+                drawChart();
+            });
+            head.removeChild(script);
+        };
+        head.appendChild(script);
+    } else {
+        initChart();
+        drawChart();
+    }
+    </script>
+</head>
+<body>
+    Root Word:
+    <input type="text" id="root_word" value="${root_word}">
+    <button type="button" onclick="setRootWordFromForm()">Update Tree</button>
+    <br>
+    <div id="wordtree_basic" style="width: 900px; height: 600px;"></div>
+</body>
+</html>
