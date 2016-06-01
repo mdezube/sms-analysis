@@ -10,6 +10,7 @@ a convenience, you can find a visualization of both the address book DB and mess
 
 """
 
+import argparse
 import os
 import sys
 import re
@@ -253,6 +254,8 @@ def get_cleaned_fully_merged_messages():
     _collapse_first_last_company_columns(fully_merged_messages_df)
     _collapse_first_last_company_columns(address_book_df)
 
+    fully_merged_messages_df.sort_values(by='date', inplace=True)
+
     print 'Printing first row of merged message dataframe:'
     display(fully_merged_messages_df.head(1))
     print 'Printing first row of address book with full name column (merged first name/last name/company):'
@@ -260,12 +263,25 @@ def get_cleaned_fully_merged_messages():
     return fully_merged_messages_df, address_book_df
 
 if __name__ == "__main__":
-    messages, addresses = get_cleaned_fully_merged_messages()
-    if len(sys.argv) > 1:
-        file_path = sys.argv[1]
-        messages.to_csv(file_path + "messages.csv", encoding='utf-8')
-        addresses.to_csv(file_path + "addresses.csv", encoding='utf-8')
+    parser = argparse.ArgumentParser(description='Print our the text messages and contacts from '
+                                                 'your iPhone.')
+    parser.add_argument('-s', '--simple', action='store_true', dest='simple',
+                        help='If passed, message output only includes the text, date and full_name '
+                             'column, and address book only includes name and phone')
+    parser.add_argument('output_directory', nargs='?',
+                        help='If passed, the messages and addressbook will be written to this'
+                             'directory.')
+    args = parser.parse_args()
+
+    message_df, addresses_df = get_cleaned_fully_merged_messages()
+    # Note we don't explicitly print phone_or_email since it's the index
+    addresses_to_print = addresses_df[['full_name']] if args.simple else addresses_df
+    messages_to_print = message_df[['full_name', 'date', 'text']] if args.simple else message_df
+
+    if args.output_directory:
+        addresses_df.to_csv(os.path.join(args.output_directory, 'addresses.csv'), encoding='utf-8')
+        messages_to_print.to_csv(os.path.join(args.output_directory, 'messages.csv'), encoding='utf-8')
     else:
-        print messages
-        print addresses
-        
+        print addresses_df
+        print '\n\n\n'
+        print messages_to_print
