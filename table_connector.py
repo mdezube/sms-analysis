@@ -11,10 +11,11 @@ a convenience, you can find a visualization of both the address book DB and mess
 """
 
 import os
-import pandas as pd
+import sys
 import re
 import sqlite3
 
+import pandas as pd
 from IPython.display import display
 
 BASE_DIR = '~/Library/Application Support/MobileSync/Backup'
@@ -257,3 +258,14 @@ def get_cleaned_fully_merged_messages():
     print 'Printing first row of address book with full name column (merged first name/last name/company):'
     display(address_book_df.head(1))
     return fully_merged_messages_df, address_book_df
+
+if __name__ == "__main__":
+    messages, addresses = get_cleaned_fully_merged_messages()
+    if len(sys.argv) > 1:
+        file_path = sys.argv[1]
+        messages.to_csv(file_path + "messages.csv", encoding='utf-8')
+        addresses.to_csv(file_path + "addresses.csv", encoding='utf-8')
+    else:
+        print messages
+        print addresses
+        
