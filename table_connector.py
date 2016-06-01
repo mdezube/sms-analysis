@@ -259,7 +259,7 @@ def get_cleaned_fully_merged_messages():
     display(address_book_df.head(1))
     return fully_merged_messages_df, address_book_df
 
-if __name__=="__main__":
+if __name__ == "__main__":
     messages, addresses = get_cleaned_fully_merged_messages()
     if len(sys.argv) > 1:
         file_path = sys.argv[1]
