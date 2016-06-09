@@ -8,6 +8,7 @@ For further discussions:
 
 # Overview of code
 This code will:
+
 1. Find your latest iPhone sync (currently only supports doing this automatically on Macs), for PCs edit
 `table_connector.py` to find the file
 2. Load up the messages database and address book database locally
@@ -18,6 +19,7 @@ This code will:
 Note: none of your data is modified nor sent anywhere during execution
 
 # Dependencies
+
 1. [Pandas](http://pandas.pydata.org), see [Pandas install](http://pandas.pydata.org/pandas-docs/stable/install.html)
 2. [IPython](http://ipython.org/) follow Pandas install link for details how to install this as well
 3. An iPhone, having synced with this computer
