@@ -10,17 +10,22 @@ a convenience, you can find a visualization of both the address book DB and mess
 
 """
 
+import argparse
 import os
-import sys
+import pandas as pd
 import re
 import sqlite3
 
-import pandas as pd
 from IPython.display import display
 
 BASE_DIR = '~/Library/Application Support/MobileSync/Backup'
 MESSAGE_DB = '3d0d7e5fb2ce288813306e4d4636395e047a3d28'
 ADDRESS_DB = '31bb7ba8914766d4ba40d6dfb6113c8b614be442'
+
+# Module variables
+_latest_sync_dir = None
+_message_con = None
+_address_con = None
 
 # START SIMPLE HELPER METHODS
 # --------------
@@ -37,12 +42,6 @@ def __get_latest_dir_in_dir(directory):
         if os.path.getmtime(full_path) > newest_date:
             newest_path, newest_date = (full_path, os.path.getmtime(full_path))
     return newest_path
-
-
-latest_sync_dir = __get_latest_dir_in_dir(BASE_DIR)
-print 'Latest directory: {0}'.format(latest_sync_dir)
-message_con = sqlite3.connect('{0}/{1}'.format(latest_sync_dir, MESSAGE_DB))
-address_con = sqlite3.connect('{0}/{1}'.format(latest_sync_dir, ADDRESS_DB))
 
 
 # Removes a leading one if it exists.
@@ -66,7 +65,7 @@ def __get_message_id_joined_to_phone_or_email():
     WHERE
       handle.ROWID = chat_handle_join.handle_id
       AND chat_handle_join.chat_id = chat.ROWID
-      AND chat.ROWID = chat_message_join.chat_id''', message_con)
+      AND chat.ROWID = chat_message_join.chat_id''', _message_con)
 
     # Clean it up a bit.
     message_id_joined_to_phone_or_email['country'] = message_id_joined_to_phone_or_email['country'].str.lower()
@@ -91,6 +90,17 @@ def __get_address_joined_with_message_id(address_book):
     return address_joined_with_message_id
 
 
+def initialize():
+    """
+        Initializes the connections to the address book and the messages sqlite databases.
+    """
+    global _latest_sync_dir, _message_con, _address_con
+    _latest_sync_dir = __get_latest_dir_in_dir(BASE_DIR)
+    print 'Latest iPhone backup directory: {0}'.format(_latest_sync_dir)
+    _message_con = sqlite3.connect('{0}/{1}'.format(_latest_sync_dir, MESSAGE_DB))
+    _address_con = sqlite3.connect('{0}/{1}'.format(_latest_sync_dir, ADDRESS_DB))
+
+
 def get_message_df():
     """
     Loads the message database from disk.
@@ -106,7 +116,7 @@ def get_message_df():
       DATETIME(date_delivered, 'unixepoch', '31 years') AS date_delivered,
       is_emote, is_from_me, is_read, is_system_message, is_service_message, is_sent,
       has_dd_results
-    FROM message''', message_con)
+    FROM message''', _message_con)
 
     messages_df = messages_df.set_index(keys='message_id')
 
@@ -141,7 +151,7 @@ def get_address_book():
       DATETIME(ModificationDate, 'unixepoch', '31 years') AS modification_date
      FROM ABPerson, ABMultiValue
      WHERE ABPerson.ROWID = ABMultiValue.record_id
-    ''', address_con)
+    ''', _address_con)
 
     # Clean it up a bit.
     address_book = address_book[(address_book['property'] == 4) | (address_book['property'] == 3)]  # Of type phone or email
@@ -219,15 +229,13 @@ def get_cleaned_fully_merged_messages():
     messages_df.drop(['version', 'is_emote', 'is_read', 'is_system_message',
                       'is_service_message', 'has_dd_results'],
                        inplace=True, axis=1)
-    print 'Loaded {0:,} messages.  Printing first row:'.format(messages_df.shape[0])
-    display(messages_df.head(1))
+    print 'Loaded {0:,} messages.'.format(messages_df.shape[0])
 
     # LOAD ADDRESS BOOK DATAFRAME
     address_book_df = get_address_book()
     # Drop a column that we don't use now, but may in the future.
     address_book_df = address_book_df.drop('property', axis=1)
-    print 'Loaded {0:,} contacts.  Printing first row:'.format(address_book_df.shape[0])
-    display(address_book_df.head(1))
+    print 'Loaded {0:,} contacts.'.format(address_book_df.shape[0])
 
     # JOIN THE MESSAGE AND ADDRESS BOOK DATAFRAMES
     fully_merged_messages_df = get_merged_message_df(messages_df, address_book_df)
@@ -253,19 +261,41 @@ def get_cleaned_fully_merged_messages():
     _collapse_first_last_company_columns(fully_merged_messages_df)
     _collapse_first_last_company_columns(address_book_df)
 
-    print 'Printing first row of merged message dataframe:'
-    display(fully_merged_messages_df.head(1))
-    print 'Printing first row of address book with full name column (merged first name/last name/company):'
-    display(address_book_df.head(1))
+    fully_merged_messages_df.sort_values(by='date', inplace=True)
+
+    print '\nPrinting columns of merged messages dataframe:'
+    print ', '.join(fully_merged_messages_df.columns.get_values())
+    print 'Printing columns of address book dataframe:'
+    print ', '.join(address_book_df.columns.get_values())
     return fully_merged_messages_df, address_book_df
 
 if __name__ == "__main__":
-    messages, addresses = get_cleaned_fully_merged_messages()
-    if len(sys.argv) > 1:
-        file_path = sys.argv[1]
-        messages.to_csv(file_path + "messages.csv", encoding='utf-8')
-        addresses.to_csv(file_path + "addresses.csv", encoding='utf-8')
+    parser = argparse.ArgumentParser(description='Print out the text messages and contacts from '
+                                                 'your iPhone\'s backup.')
+    parser.add_argument('-f', '--full', action='store_true', dest='full',
+                        help='If passed, message output includes more than just the text, date and '
+                             ' full_name columns, and the address book output includes more than'
+                             ' just the name and phone columns. This is automatically true if the'
+                             ' output_directory is set.')
+    parser.add_argument('output_directory', nargs='?',
+                        help='If passed, the messages and address book will be written to this'
+                             ' directory each as a CSV.  This directory must already exist.')
+    args = parser.parse_args()
+
+    # Set width to none so it auto-fills to the terminal window.
+    pd.set_option('display.width', None)
+    initialize()
+
+    message_df, addresses_df = get_cleaned_fully_merged_messages()
+    # Note we don't explicitly print phone_or_email since it's the index
+    addresses_to_print = addresses_df if args.full else addresses_df[['full_name']]
+    messages_to_print = message_df if args.full else message_df[['full_name', 'date', 'text']]
+
+    if args.output_directory:
+        addresses_df.to_csv(os.path.join(args.output_directory, 'addresses.csv'), encoding='utf-8')
+        messages_to_print.to_csv(os.path.join(args.output_directory, 'messages.csv'), encoding='utf-8')
     else:
-        print messages
-        print addresses
-        
+        print '\nADDRESS BOOK (output to CSV for full data):'
+        print addresses_to_print
+        print '\n\n\nMESSAGES (output to CSV for full data):'
+        print messages_to_print
