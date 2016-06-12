@@ -118,7 +118,7 @@ def get_message_df():
       has_dd_results
     FROM message''', _message_con)
 
-    messages_df = messages_df.set_index(keys='message_id')
+    messages_df = messages_df.set_index('message_id')
 
     # Convert a few columns to dates.
     messages_df['date'] = pd.to_datetime(messages_df['date'])
@@ -262,6 +262,8 @@ def get_cleaned_fully_merged_messages():
     _collapse_first_last_company_columns(address_book_df)
 
     fully_merged_messages_df.sort_values(by='date', inplace=True)
+    fully_merged_messages_df.reset_index(inplace=True, drop=True)
+    fully_merged_messages_df.index.name = 'row_index'  # Without this Excel will complain upon import.
 
     print '\nPrinting columns of merged messages dataframe:'
     print ', '.join(fully_merged_messages_df.columns.get_values())
@@ -274,12 +276,11 @@ if __name__ == "__main__":
                                                  'your iPhone\'s backup.')
     parser.add_argument('-f', '--full', action='store_true', dest='full',
                         help='If passed, message output includes more than just the text, date and '
-                             ' full_name columns, and the address book output includes more than'
-                             ' just the name and phone columns. This is automatically true if the'
-                             ' output_directory is set.')
+                             'full_name columns, and the address book output includes more than '
+                             'just the name and phone columns.')
     parser.add_argument('output_directory', nargs='?',
-                        help='If passed, the messages and address book will be written to this'
-                             ' directory each as a CSV.  This directory must already exist.')
+                        help='If passed, the messages and address book will be written to this '
+                             'directory each as a CSV.  This directory must already exist.')
     args = parser.parse_args()
 
     # Set width to none so it auto-fills to the terminal window.
@@ -287,12 +288,12 @@ if __name__ == "__main__":
     initialize()
 
     message_df, addresses_df = get_cleaned_fully_merged_messages()
-    # Note we don't explicitly print phone_or_email since it's the index
+    # Note we don't explicitly print phone_or_email since it's the index.
     addresses_to_print = addresses_df if args.full else addresses_df[['full_name']]
     messages_to_print = message_df if args.full else message_df[['full_name', 'date', 'text']]
 
     if args.output_directory:
-        addresses_df.to_csv(os.path.join(args.output_directory, 'addresses.csv'), encoding='utf-8')
+        addresses_to_print.to_csv(os.path.join(args.output_directory, 'addresses.csv'), encoding='utf-8')
         messages_to_print.to_csv(os.path.join(args.output_directory, 'messages.csv'), encoding='utf-8')
     else:
         print '\nADDRESS BOOK (output to CSV for full data):'

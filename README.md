@@ -42,6 +42,7 @@ that cell, under menu choose: Cell --> Run Cell
 * Run `python table_connector.py` to see a sample of the messages and address book data
 * Run `python table_connector.py --full` to see a sample of the messages and address book data with all of their columns
 * Run `python table_connector.py <output directory>` to output the messages and address book data into CSV files
+* Run `python table_connector.py --full <output directory>` to output the messages and address book data into CSV files with all of their columns
 * SEE THE ARGS DOCUMENTATION: `python table_connector.py --help` to see the arguments and their options
 
 Contact michaeldezube at gmail com with questions
