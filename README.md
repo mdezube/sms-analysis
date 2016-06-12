@@ -30,11 +30,17 @@ Note: none of your data is modified nor sent anywhere during execution
 ## Dependencies easy install
 Run pip install -r requirements.txt
 
-# Quick start
+# Quick Start - Jupyter Notebook 
 1. Start the IPython notebook like so: `jupyter notebook sms_analysis.ipynb`
 2. Under the menu choose Cell --> Run All
 3. Edit the `CONTACT_NAME` and `ROOT_WORD` in the last cell to alter the visualization and then re-run
 that cell, under menu choose: Cell --> Run Cell
+
+# Quick Start - Command Line
+* Run `python table_connector.py` to see a sample of the messages and address book data
+* Run `python table_connector.py --full` to see a sample of the messages and address book data with all of their columns
+* Run `python table_connector.py <output directory>` to output the messages and address book data into CSV files
+* SEE THE ARGS DOCUMENTATION: `python table_connector.py --help` to see the arguments and their options
 
 Contact michaeldezube at gmail com with questions
 
