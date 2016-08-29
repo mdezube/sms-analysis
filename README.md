@@ -13,9 +13,9 @@ This code will:
 `table_connector.py` to find the file
 2. Load up the messages database and address book database locally
 3. Merge the databases together into `fully_merged_messages_df` which you can freely play with
-4. Visualize a word tree of your text messages with a specific contact (see screenshot below)
+4. Visualize a word tree of your text messages with a specific contact, see [word tree screenshot](#example-word-tree)
 5. Show you who you text the most
-6. Create an interactive streamgraph to visualize how your texting with people has trended over time (see screenshot below)
+6. Create an interactive streamgraph to visualize how your texting with people has trended over time, see [steamgraph screenshot](#example-steamgraph)
 
 Note: none of your data is modified nor sent anywhere during execution
 
@@ -49,13 +49,13 @@ that cell, under menu choose: Cell --> Run Cell
 
 # Screenshots from running the code
 
-## Example word tree:
+## Example word tree
 
 <div align="center">
     <img height="400" src="https://raw.githubusercontent.com/mdezube/sms-analysis/master/example%20word%20tree.png"></img>
 </div>
 
-## Example steamgraph:
+## Example steamgraph
 <div align="center">
     <img height="400" src="https://raw.githubusercontent.com/mdezube/sms-analysis/master/steamgraph_screenshot.png"></img>
 </div>
