@@ -13,24 +13,26 @@ This code will:
 `table_connector.py` to find the file
 2. Load up the messages database and address book database locally
 3. Merge the databases together into `fully_merged_messages_df` which you can freely play with
-4. Visualize a word tree of your text messages with a specific contact
+4. Visualize a word tree of your text messages with a specific contact (see screenshot below)
 5. Show you who you text the most
+6. Create an interactive streamgraph to visualize how your texting with people has trended over time (see screenshot below)
 
 Note: none of your data is modified nor sent anywhere during execution
 
-# Dependencies
+# Dependencies easy install
+Run `pip install -r requirements.txt`
 
-1. [Pandas](http://pandas.pydata.org), see [Pandas install](http://pandas.pydata.org/pandas-docs/stable/install.html)
-2. [IPython](http://ipython.org/) follow Pandas install link for details how to install this as well
+If you don't have pip, see https://pip.pypa.io/en/stable/installing/
+
+## Dependencies with details
+
+1. [Pandas](http://pandas.pydata.org)
+2. [IPython](http://ipython.org/)
 3. An iPhone, having synced with this computer
 4. If running on a Mac, code will work out of the box. If running on a PC, change the variable `BASE_DIR` in
 `table_connector.py` to the directory of your backups
-    * This [post](http://www.iphonefaq.org/comment/70608#comment-70608) seems to specify the location of backups on
-    Windows.
+    * This [post](http://www.iphonefaq.org/comment/70608#comment-70608) seems to specify the location of backups on Windows.
 5. Internet connection to load the google visualization API, it's a very small file though
-
-## Dependencies easy install
-Run pip install -r requirements.txt
 
 # Quick Start - Jupyter Notebook 
 1. Start the IPython notebook like so: `jupyter notebook sms_analysis.ipynb`
@@ -45,8 +47,15 @@ that cell, under menu choose: Cell --> Run Cell
 * Run `python table_connector.py --full <output directory>` to output the messages and address book data into CSV files with all of their columns
 * SEE THE ARGS DOCUMENTATION: `python table_connector.py --help` to see the arguments and their options
 
-Contact michaeldezube at gmail com with questions
+# Screenshots from running the code
 
-Example word tree:
+## Example word tree:
 
-<img height="400" src="https://raw.githubusercontent.com/mdezube/sms-analysis/master/example%20word%20tree.png"></img>
+<div align="center">
+    <img height="400" src="https://raw.githubusercontent.com/mdezube/sms-analysis/master/example%20word%20tree.png"></img>
+</div>
+
+## Example steamgraph:
+<div align="center">
+    <img height="400" src="https://raw.githubusercontent.com/mdezube/sms-analysis/master/steamgraph_screenshot.png"></img>
+</div>
