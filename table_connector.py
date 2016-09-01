@@ -44,9 +44,13 @@ def __get_latest_dir_in_dir(directory):
     return newest_path
 
 
-# Removes a leading one if it exists.
-def __strip_initial_1_in_phone(row):
+# Removes leading ones from phone numbers as well as any spaces or punctuation.
+def __standardize_phone_numbers(row):
     phone_or_email = row.phone_or_email
+    if '@' not in phone_or_email:
+        # Change unbreakable space characters into regular spaces.
+        phone_or_email = phone_or_email.replace(u'\xa0', u' ')
+        phone_or_email = re.sub(r'[()\- ]+', '', phone_or_email)
     return re.sub(r'(\+?1)(\d{10})', r'\2', phone_or_email)
 
 
@@ -70,7 +74,7 @@ def __get_message_id_joined_to_phone_or_email():
     # Clean it up a bit.
     message_id_joined_to_phone_or_email['country'] = message_id_joined_to_phone_or_email['country'].str.lower()
     message_id_joined_to_phone_or_email['phone_or_email'] = message_id_joined_to_phone_or_email.apply(
-        __strip_initial_1_in_phone, axis=1)
+        __standardize_phone_numbers, axis=1)
     return message_id_joined_to_phone_or_email
 
 
@@ -159,8 +163,7 @@ def get_address_book():
 
     # Clean it up a bit.
     address_book = address_book[(address_book['property'] == 4) | (address_book['property'] == 3)]  # Of type phone or email
-    address_book['phone_or_email'] = address_book['phone_or_email'].str.replace(r'[()\- ]', '')
-    address_book['phone_or_email'] = address_book.apply(__strip_initial_1_in_phone, axis=1)
+    address_book['phone_or_email'] = address_book.apply(__standardize_phone_numbers, axis=1)
 
     # Convert a few columns to dates.
     address_book['birthday'] = pd.to_datetime(address_book['birthday'], errors='coerce')
