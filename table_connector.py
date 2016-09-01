@@ -50,7 +50,7 @@ def __standardize_phone_numbers(row):
     if '@' not in phone_or_email:
         # Change unbreakable space characters into regular spaces.
         phone_or_email = phone_or_email.replace(u'\xa0', u' ')
-        phone_or_email = re.sub('[()\- ]+', '', phone_or_email)
+        phone_or_email = re.sub(r'[()\- ]+', '', phone_or_email)
     return re.sub(r'(\+?1)(\d{10})', r'\2', phone_or_email)
 
 
