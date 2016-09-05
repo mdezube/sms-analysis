@@ -16,6 +16,7 @@ This code will:
 4. Visualize a word tree of your text messages with a specific contact, see [word tree screenshot](#example-word-tree)
 5. Show you who you text the most
 6. Create an interactive streamgraph to visualize how your texting with people has trended over time, see [steamgraph screenshot](#example-steamgraph)
+7. Create a word cloud of the words you use, and those used by your contacts, see [word cloud screenshot](#example-word-cloud)
 
 Note: none of your data is modified nor sent anywhere during execution
 
@@ -62,4 +63,9 @@ that cell, under menu choose: Cell --> Run Cell
 ## Example steamgraph
 <div align="center">
     <img height="400" src="https://raw.githubusercontent.com/mdezube/sms-analysis/master/steamgraph_screenshot.png"></img>
+</div>
+
+## Example word cloud
+<div align="center">
+    <img height="400" src="https://raw.githubusercontent.com/mdezube/sms-analysis/master/wordcloud_screenshot.png"></img>
 </div>
