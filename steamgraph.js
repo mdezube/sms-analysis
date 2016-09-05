@@ -206,7 +206,7 @@ function createSteamgraph(csvAsString, opt_color) {
     steamgraph.READABLE_DATE_FORMAT = d3.time.format("%b '%y");
     steamgraph.COMMA_FORMAT = d3.format("0,000");
     steamgraph.stacker = d3.layout.stack()
-        .offset("silhouette")
+        .offset("wiggle")
         .values(function(d) {
             return d.values;
         })
