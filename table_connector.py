@@ -92,8 +92,10 @@ def __get_address_joined_with_message_id(address_book):
                                                            keep=False)
     if not sum(duplicates) == 0:
         error_message = ('WARNING: tuple (message_id, chat_id, and phone_or_email) '
-                         'do not form a composite key. There are %i duplicates.')
+                         'do not form a composite key. There are %i duplicates. '
+                         'Dropping the duplicates so later calculations are still valid.')
         print error_message % sum(duplicates)
+        address_joined_with_message_id.drop_duplicates(subset=key_fields, inplace=True)
 
     return address_joined_with_message_id
 
@@ -274,7 +276,7 @@ def get_cleaned_fully_merged_messages():
 
     print '\nPrinting columns of merged messages dataframe:'
     print ', '.join(fully_merged_messages_df.columns.get_values())
-    print 'Printing columns of address book dataframe:'
+    print '\nPrinting columns of address book dataframe:'
     print ', '.join(address_book_df.columns.get_values())
     return fully_merged_messages_df, address_book_df
 
