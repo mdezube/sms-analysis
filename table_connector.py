@@ -107,9 +107,16 @@ def initialize():
     global _latest_sync_dir, _message_con, _address_con
     _latest_sync_dir = __get_latest_dir_in_dir(BASE_DIR)
     print 'Latest iPhone backup directory: {0}'.format(_latest_sync_dir)
-    _message_con = sqlite3.connect('{0}/{1}'.format(_latest_sync_dir, MESSAGE_DB))
-    _address_con = sqlite3.connect('{0}/{1}'.format(_latest_sync_dir, ADDRESS_DB))
 
+    # Newer iPhone OS's shard the backup into subdirectories starting with the first two chars
+    # of the files within them.
+    has_subdirectory_structure = MESSAGE_DB[:2] in os.listdir(_latest_sync_dir)
+    if has_subdirectory_structure:
+        _message_con = sqlite3.connect(os.path.join(_latest_sync_dir, MESSAGE_DB[:2], MESSAGE_DB))
+        _address_con = sqlite3.connect(os.path.join(_latest_sync_dir, ADDRESS_DB[:2], ADDRESS_DB))
+    else:
+        _message_con = sqlite3.connect(os.path.join(_latest_sync_dir, MESSAGE_DB))
+        _address_con = sqlite3.connect(os.path.join(_latest_sync_dir, ADDRESS_DB))
 
 def get_message_df():
     """
