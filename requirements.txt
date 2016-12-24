@@ -1,5 +1,6 @@
 pandas >= 0.18.0
 ipython >= 4.1.1
+ipywidgets >= 4.1.1
 jupyter >= 1.0
 notebook >= 4.1.0
 seaborn >= 0.7.0
