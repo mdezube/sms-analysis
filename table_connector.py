@@ -65,11 +65,13 @@ def __get_message_id_joined_to_phone_or_email():
     SELECT
       handle.id AS phone_or_email, handle.service, handle.country,
       chat_message_join.message_id, chat.ROWID AS chat_id
-    FROM handle, chat_handle_join, chat, chat_message_join
+    FROM handle, chat_handle_join, chat, chat_message_join, message
     WHERE
       handle.ROWID = chat_handle_join.handle_id
       AND chat_handle_join.chat_id = chat.ROWID
-      AND chat.ROWID = chat_message_join.chat_id''', _message_con)
+      AND chat.ROWID = chat_message_join.chat_id
+      AND message.ROWID = chat_message_join.message_id
+      AND ((chat_handle_join.handle_id = message.handle_id) OR message.is_from_me)''', _message_con)
 
     # Clean it up a bit.
     message_id_joined_to_phone_or_email['country'] = message_id_joined_to_phone_or_email['country'].str.lower()
@@ -265,8 +267,9 @@ def get_cleaned_fully_merged_messages():
 
     print 'Messages with phone numbers not found in address book: {0:,}'.format(
         fully_merged_messages_df[fully_merged_messages_df.merge_chat_with_address != 'both'].shape[0])
-    print ('Messages loaded: {0:,} (this is larger than the length of the messages table as certain '
-           'message IDs were sent in group messages.)').format(fully_merged_messages_df.shape[0])
+
+    print ('Messages loaded: {0:,} (this is larger than the length of the messages table due to group '
+           'messages you sent)').format(fully_merged_messages_df.shape[0])
 
     # Drop some columns that we're no longer going to need.
     fully_merged_messages_df = fully_merged_messages_df.drop(['merge_chat_with_address',
