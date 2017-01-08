@@ -19,6 +19,7 @@ This code will:
 7. Create a word cloud of the words you use, and those used by your contacts, see [word cloud screenshot](#example-word-cloud)
 8. Use TFIDF to understand what words identify your contacts' verbiage
 9. Use TFIDF to understand what words identify the difference between contacts' verbiage.  For example: how do high school friends talk differently from college friends, see [tfidf contact comparison](#example-tfidf-contact-comparison)
+10. Use TFIDF to show you what topics were popular in texts you sent, or texts sent to you, and how this progressed over the years
 
 Note: none of your data is modified nor sent anywhere during execution
 
