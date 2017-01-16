@@ -18,7 +18,6 @@ import sqlite3
 
 from IPython.display import display
 
-BASE_DIR = '~/Library/Application Support/MobileSync/Backup'
 MESSAGE_DB = '3d0d7e5fb2ce288813306e4d4636395e047a3d28'
 ADDRESS_DB = '31bb7ba8914766d4ba40d6dfb6113c8b614be442'
 
@@ -33,10 +32,9 @@ _address_con = None
 
 # Get's the most recently updated directory within the passed directory.
 def __get_latest_dir_in_dir(directory):
-    directory_path = os.path.expanduser(directory)
     newest_path, newest_date = ('', -1)
-    for relative_path in os.listdir(directory_path):
-        full_path = os.path.join(directory_path, relative_path)
+    for relative_path in os.listdir(directory):
+        full_path = os.path.join(directory, relative_path)
         if not os.path.isdir(full_path):  # Ignore non-directories.
             continue
         if os.path.getmtime(full_path) > newest_date:
@@ -107,7 +105,14 @@ def initialize():
         Initializes the connections to the address book and the messages sqlite databases.
     """
     global _latest_sync_dir, _message_con, _address_con
-    _latest_sync_dir = __get_latest_dir_in_dir(BASE_DIR)
+
+    if os.getenv('APPDATA'):  # Windows.
+        base_dir = os.path.join(os.getenv('APPDATA'), 'Apple Computer')
+    else:  # Mac.
+        base_dir = os.path.join(os.getenv('HOME'), 'Library', 'Application Support')
+    base_dir = os.path.join(base_dir, 'MobileSync', 'Backup')
+
+    _latest_sync_dir = __get_latest_dir_in_dir(base_dir)
     print 'Latest iPhone backup directory: {0}'.format(_latest_sync_dir)
 
     # Newer iPhone OS's shard the backup into subdirectories starting with the first two chars
