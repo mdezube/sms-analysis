@@ -25,7 +25,8 @@ Note: none of your data is modified nor sent anywhere during execution
 
 # Dependencies easy install
 If you don't have pip, see https://pip.pypa.io/en/stable/installing/
-Another option on Mac OS X is to use: sudo easy_install pip
+
+Another option on Mac OS X is to use `sudo easy_install pip`
 
 Then run `pip install -r requirements.txt` and `pip install "matplotlib>=1.4"`
 
