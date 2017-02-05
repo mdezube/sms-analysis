@@ -15,6 +15,9 @@ import os
 import pandas as pd
 import re
 import sqlite3
+import json
+from dateutil.parser import parse
+from sets import Set
 
 from IPython.display import display
 
@@ -55,6 +58,42 @@ def __standardize_phone_numbers(row):
 # --------------
 # END SIMPLE HELPER METHODS
 
+def get_fb():
+    """
+        Merges the message dataframe with the address book dataframe to return a single dataframe that contains all
+        messages with detailed information (e.g. name, company, birthday) about the sender.
+
+    Returns:
+        a dataframe that contained all messages with info about their senders
+    """
+    data_file = open('output.json')
+    data = json.load(data_file)
+    user = data['user']
+    i = 0
+    arr = []
+    addr = Set()
+    for t in data['threads']:
+        for p in t['participants']:
+            addr.add(p)
+        for m in t['messages']:
+            id = i
+            mess = m['message']
+            is_me = True if m['sender'] == user else False
+            sender = m['sender']
+            date = parse(m['date'])
+            arr.append([id,mess,is_me,sender,date,sender])
+            i += 1
+    df = pd.DataFrame(columns=('message_id', 'text', 'is_from_me', 'handle_id', 'date', 'full_name'), data=arr)
+    addr_book = pd.DataFrame(columns=('id','first','last'), data=[[x,x,""] for x in addr])
+    def create_full_name(row):
+        print row
+        atoms = [atom for atom in [row['first'], row['last']] if atom]
+        atoms_as_str = [atom.encode('utf8') if isinstance(atom, unicode) else str(atom) for atom in atoms]
+        return ' '.join(atoms_as_str)
+
+    addr_book['full_name'] = addr_book.apply(create_full_name, axis=1)
+    addr_book = addr_book.set_index('first')
+    return df, addr_book
 
 # Joins messages with the phone numbers/emails that sent them.  This handles group messages as well where one
 # message could be sent to multiple people.
@@ -111,9 +150,12 @@ def initialize():
     else:  # Mac.
         base_dir = os.path.join(os.getenv('HOME'), 'Library', 'Application Support')
     base_dir = os.path.join(base_dir, 'MobileSync', 'Backup')
-
-    _latest_sync_dir = __get_latest_dir_in_dir(base_dir)
-    print 'Latest iPhone backup directory: {0}'.format(_latest_sync_dir)
+    try:
+        _latest_sync_dir = __get_latest_dir_in_dir(base_dir)
+        print 'Latest iPhone backup directory: {0}'.format(_latest_sync_dir)
+    except:
+        print 'No iPhone backup found'
+        return
 
     # Newer iPhone OS's shard the backup into subdirectories starting with the first two chars
     # of the files within them.
@@ -238,7 +280,7 @@ def _collapse_first_last_company_columns(df):
     df.drop(['first', 'last', 'company'], inplace=True, axis=1)
 
 
-def get_cleaned_fully_merged_messages():
+def get_cleaned_fully_merged_messages(fb = False):
     """
         Merges the message dataframe with the address book dataframe to return a single dataframe that contains all
         messages with detailed information (e.g. name, company, birthday) about the sender.
@@ -246,6 +288,8 @@ def get_cleaned_fully_merged_messages():
     Returns:
         a dataframe that contained all messages with info about their senders
     """
+    if fb == True:
+        return get_fb()
     # LOAD MESSAGE DATAFRAME
     messages_df = get_message_df()
     # Drop some columns that we don't use now, but may in the future.
