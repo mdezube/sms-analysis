@@ -8,3 +8,4 @@ wordcloud >= 1.2.1
 Pillow >= 3.3.1
 fbchat-archive-parser >= 0.8.post31
 lxml >= 3.7.3
+beautifulsoup4 >= 4.5.3
