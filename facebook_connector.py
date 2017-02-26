@@ -25,22 +25,6 @@ or specify the location of the file in the function call
 
 
 def resolve_user_id(user_id):
-    pattern_match = fb_id_pattern.match(user_id)
-    if pattern_match:
-        fb_numeric_id = pattern_match.group(1)
-        try:
-            if fb_numeric_id not in mapped_fb_ids:
-                fb_page_title = html.parse(urlopen(
-                    "https://www.facebook.com/{}".format(fb_numeric_id)
-                    )).find(".//title").text
-                username = fb_page_title.split("|")[0].strip()
-                if not username.startswith('Security Check Required'):
-                    mapped_fb_ids[fb_numeric_id] = username
-            else:
-                return mapped_fb_ids[fb_numeric_id]
-        except:
-            # Probably deleted user
-            mapped_fb_ids[fb_numeric_id] = fb_numeric_id
     return user_id
 
 
