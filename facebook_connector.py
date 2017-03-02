@@ -1,3 +1,11 @@
+"""
+
+Author: Nigel Schuster <nigel schusters at gmail dot com>
+
+This module provides a simple abstraction for accessing the Facebook chat data
+
+"""
+
 from __future__ import print_function
 
 from bs4 import BeautifulSoup
@@ -13,6 +21,12 @@ _fb_id_pattern = re.compile(r"(\d+)@facebook\.com")
 
 
 def initialize(dump_location="."):
+    """
+        Initializes the access to the Facebook messages file by asserting its location
+
+        Args:
+            dump_location: path to the messages.htm file
+    """
     global _messages_file
     fb_message_filename = "messages.htm"
     _messages_file = os.path.join(dump_location, fb_message_filename)
@@ -23,11 +37,30 @@ def initialize(dump_location="."):
 
 
 def resolve_user_id(user_id):
+    """
+    Tries to map the identifier facebook provides to the name of the user.
+
+    Args:
+        user_id: identifier string that is provided in the messages file
+
+    Returns:
+        The name of the user if it is able to find it, otherwise the input
+    """
     return user_id
 
 
 def get_cleaned_fully_merged_messages(strip_html_content=True,
                                       resolve_fb_id=False):
+    """
+    Parses the messages file to create dataframes that contain the messages and their senders respectively
+
+    Args:
+        strip_html_content: The messages.htm file might contain some html tags in messages. This option will remove all html markup.
+        resolve_fb_id: The messages.htm file does always print Facebook names, but sometimes ids instead. This will atempt to resolve the issue.
+
+    Returns:
+        a dataframe that contained all messages with info about their senders
+    """
     if _messages_file is None:
         print("Please initialize the module first.")
         return
