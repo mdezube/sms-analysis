@@ -94,10 +94,7 @@ def get_cleaned_fully_merged_messages(strip_html_content=True,
             from_me = sender == me
             content = ""
             if strip_html_content:
-                try:
-                    content = BeautifulSoup(message.content, "html.parser").text
-                except:
-                    content = message.content
+                content = BeautifulSoup(message.content, "html.parser").text
             else:
                 content = message.content
             # In the following we add a single message to our dataframe
