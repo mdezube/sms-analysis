@@ -13,7 +13,6 @@ from bs4 import BeautifulSoup
 from fbchat_archive_parser.parser import MessageHtmlParser
 import os
 import pandas as pd
-import re
 import warnings
 
 _messages_file = None
@@ -21,17 +20,18 @@ _messages_file = None
 
 def initialize(dump_directory="."):
     """
-        Asserts the messages.htm file in the Facebook dump can be found,
-        and saves it location for later usage in this module
+    Asserts the messages.htm file in the Facebook dump can be found and saves its location for
+    later usage in this module
 
-        Args:
-            dump_directory: path to the directory that contains messages.htm file
+    Args:
+        dump_directory: path to the directory that contains messages.htm file
     """
     global _messages_file
     fb_message_filename = "messages.htm"
     _messages_file = os.path.join(dump_directory, fb_message_filename)
     if not os.path.isfile(_messages_file):
-        print("The location provided did not contain messages.htm, the location is usually /html.")
+        print("The directory provided did not contain messages.htm, the directory is usually "
+              "/html within the archive downloaded from facebook.com")
         _messages_file = None
 
 
@@ -45,9 +45,8 @@ def resolve_user_id(user_id):
     Returns:
         The name of the user if it is able to find it, otherwise the input
     """
-    # TODO (neitsch): This method is not implemented yet
-    #                 Use the user_id (format: 12345678@facebook.com) to get the
-    #                 actual name of the user
+    # TODO (neitsch): This method is not implemented yet.  Use the user_id
+    # (format: 12345678@facebook.com) to get the actual name of the user
     return user_id
 
 
@@ -57,15 +56,17 @@ def get_cleaned_fully_merged_messages(strip_html_content=True,
     Parses the messages file to create dataframes that contain the messages and their senders.
 
     Args:
-        strip_html_content: The messages.htm file might contain some html tags in messages; this option will remove all html markup
-        resolve_fb_id: The messages.htm file doesn't always print Facebook names, but sometimes ids instead; this will atempt to resolve the issue,
-        but requires a web request per id and is not guaranteed to work
+        strip_html_content: The messages.htm file might contain some html tags in messages; this
+            option will remove all html markup
+        resolve_fb_id: The messages.htm file doesn't always print Facebook names, but sometimes ids
+            instead; this will attempt to resolve them, but requires a web request per id and is not
+            guaranteed to work
 
     Returns:
         a dataframe that contains all messages with info about their senders
     """
     if not _messages_file:
-        print("Please initialize the module first.")
+        print("Please initialize the facebook_connector module.")
         return
     chats = MessageHtmlParser(path=_messages_file).parse()
     me = chats.user
@@ -88,12 +89,11 @@ def get_cleaned_fully_merged_messages(strip_html_content=True,
                 resolved_participants.add(resolved_participant)
         addresses.update(resolved_participants)
         for message in thread.messages:
-            if (not message.content or message.content.isspace()):
+            if not message.content or message.content.isspace():
                 continue
             sender = resolve_user_id(
                 message.sender) if resolve_fb_id else message.sender
             from_me = sender == me
-            content = ""
             if strip_html_content:
                 content = BeautifulSoup(message.content, "html.parser").text
             else:
