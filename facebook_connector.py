@@ -13,9 +13,16 @@ from bs4 import BeautifulSoup
 from fbchat_archive_parser.parser import MessageHtmlParser
 import os
 import pandas as pd
+import re
 import warnings
+try:
+    from urllib.request import urlopen
+except ImportError:
+    from urllib import urlopen
 
 _messages_file = None
+_FB_ID_PATTERN = re.compile(r"(\d+)@facebook\.com")
+_mapped_fb_ids = {}
 
 
 def initialize(dump_directory="."):
@@ -45,8 +52,23 @@ def resolve_user_id(user_id):
     Returns:
         The name of the user if it is able to find it, otherwise the input
     """
-    # TODO (neitsch): This method is not implemented yet.  Use the user_id
-    # (format: 12345678@facebook.com) to get the actual name of the user
+    fb_id_pattern_match = _FB_ID_PATTERN.match(user_id)
+    if fb_id_pattern_match:
+        fb_numeric_id = fb_id_pattern_match.group(1)
+        try:
+            if fb_numeric_id not in _mapped_fb_ids:
+                fb_user_page = urlopen("https://www.facebook.com/{}".format(fb_numeric_id))
+                fb_page_title = BeautifulSoup(fb_user_page.read()).title.string
+                username = fb_page_title.split("|")[0].strip()
+                if username.startswith('Security Check Required') or username.startswith('Page Not Found'):
+                    _mapped_fb_ids[fb_numeric_id] = fb_numeric_id
+                else:
+                    _mapped_fb_ids[fb_numeric_id] = username
+            else:
+                return _mapped_fb_ids[fb_numeric_id]
+        except:
+            # Probably deleted user
+            _mapped_fb_ids[fb_numeric_id] = fb_numeric_id
     return user_id
 
 
