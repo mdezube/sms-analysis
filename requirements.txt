@@ -6,3 +6,5 @@ notebook >= 4.1.0
 seaborn >= 0.7.0
 wordcloud >= 1.2.1
 Pillow >= 3.3.1
+fbchat-archive-parser >= 0.8.post31
+beautifulsoup4 >= 4.5.3
