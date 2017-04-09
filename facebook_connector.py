@@ -15,6 +15,7 @@ import os
 import pandas as pd
 import re
 import warnings
+# Python 3 moved urlopen to a different package. Trying Python 2 import first for compatibility.
 try:
     from urllib.request import urlopen
 except ImportError:
@@ -55,20 +56,20 @@ def resolve_user_id(user_id):
     fb_id_pattern_match = _FB_ID_PATTERN.match(user_id)
     if fb_id_pattern_match:
         fb_numeric_id = fb_id_pattern_match.group(1)
-        try:
-            if fb_numeric_id not in _mapped_fb_ids:
+        if fb_numeric_id not in _mapped_fb_ids:
+            username = fb_numeric_id
+            try:
                 fb_user_page = urlopen("https://www.facebook.com/{}".format(fb_numeric_id))
                 fb_page_title = BeautifulSoup(fb_user_page.read()).title.string
-                username = fb_page_title.split("|")[0].strip()
-                if username.startswith('Security Check Required') or username.startswith('Page Not Found'):
-                    _mapped_fb_ids[fb_numeric_id] = fb_numeric_id
-                else:
-                    _mapped_fb_ids[fb_numeric_id] = username
-            else:
-                return _mapped_fb_ids[fb_numeric_id]
-        except:
-            # Probably deleted user
-            _mapped_fb_ids[fb_numeric_id] = fb_numeric_id
+                possible_username = fb_page_title.split("|")[0].strip()
+                if not (username.startswith('Security Check Required') or username.startswith('Page Not Found')):
+                    username = possible_username
+            except:
+                # Wasn't able to find the user - no harm done
+                pass
+            _mapped_fb_ids[fb_numeric_id] = username
+        else:
+            return _mapped_fb_ids[fb_numeric_id]
     return user_id
 
 
