@@ -132,15 +132,21 @@ def get_message_df():
     Returns:
         a pandas dataframe representing all text messages
     """
-    messages_df = pd.read_sql_query('''
-    SELECT
-      ROWID as message_id, text, handle_id, country, service, version,
-      DATETIME(date, 'unixepoch', '31 years') AS date,
-      DATETIME(date_read, 'unixepoch', '31 years') AS date_read,
-      DATETIME(date_delivered, 'unixepoch', '31 years') AS date_delivered,
-      is_emote, is_from_me, is_read, is_system_message, is_service_message, is_sent,
-      has_dd_results
-    FROM message''', _message_con)
+    try:
+        messages_df = pd.read_sql_query('''
+        SELECT
+          ROWID as message_id, text, handle_id, country, service, version,
+          DATETIME(date, 'unixepoch', '31 years') AS date,
+          DATETIME(date_read, 'unixepoch', '31 years') AS date_read,
+          DATETIME(date_delivered, 'unixepoch', '31 years') AS date_delivered,
+          is_emote, is_from_me, is_read, is_system_message, is_service_message, is_sent,
+          has_dd_results
+        FROM message''', _message_con)
+    except pd.io.sql.DatabaseError:
+        raise pd.io.sql.DatabaseError(
+            "The backup files from your Iphone are encrypted.\n\t"
+            "Decrypt the files using Itunes and try again."
+            )
 
     messages_df = messages_df.set_index('message_id')
 
