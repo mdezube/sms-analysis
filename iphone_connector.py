@@ -10,6 +10,9 @@ a convenience, you can find a visualization of both the address book DB and mess
 
 """
 
+from __future__ import print_function
+from __future__ import division
+
 import argparse
 import os
 import pandas as pd
@@ -94,7 +97,7 @@ def __get_address_joined_with_message_id(address_book):
         error_message = ('WARNING: tuple (message_id, chat_id, and phone_or_email) '
                          'do not form a composite key. There are %i duplicates. '
                          'Dropping the duplicates so later calculations are still valid.')
-        print error_message % sum(duplicates)
+        print(error_message % sum(duplicates))
         address_joined_with_message_id.drop_duplicates(subset=key_fields, inplace=True)
 
     return address_joined_with_message_id
@@ -113,7 +116,7 @@ def initialize():
     base_dir = os.path.join(base_dir, 'MobileSync', 'Backup')
 
     _latest_sync_dir = __get_latest_dir_in_dir(base_dir)
-    print 'Latest iPhone backup directory: {0}'.format(_latest_sync_dir)
+    print('Latest iPhone backup directory: {0}'.format(_latest_sync_dir))
 
     # Newer iPhone OS's shard the backup into subdirectories starting with the first two chars
     # of the files within them.
@@ -208,13 +211,13 @@ def get_merged_message_df(messages_df, address_book, print_debug=False):
     phones_with_message_id_df = __get_address_joined_with_message_id(address_book)
 
     if print_debug:
-        print 'Messages Dataframe'
+        print('Messages Dataframe')
         display(messages_df.head(1))
 
-        print 'Address Book Dataframe'
+        print('Address Book Dataframe')
         display(address_book.head(1))
 
-        print 'Phones/emails merged with message IDs via chats Dataframe'
+        print('Phones/emails merged with message IDs via chats Dataframe')
         display(phones_with_message_id_df.head(1))
 
     return messages_df.merge(phones_with_message_id_df,
@@ -231,7 +234,7 @@ def _collapse_first_last_company_columns(df):
 
     def create_full_name(row):
         atoms = [atom for atom in [row['first'], row['last'], row['company']] if atom]
-        atoms_as_str = [atom.encode('utf8') if isinstance(atom, unicode) else str(atom) for atom in atoms]
+        atoms_as_str = [atom.encode('utf8') if type(atom).__name__ == 'unicode' else str(atom) for atom in atoms]
         return ' '.join(atoms_as_str)
 
     df['full_name'] = df.apply(create_full_name, axis=1)
@@ -252,13 +255,13 @@ def get_cleaned_fully_merged_messages():
     messages_df.drop(['version', 'is_emote', 'is_read', 'is_system_message',
                       'is_service_message', 'has_dd_results'],
                        inplace=True, axis=1)
-    print 'Loaded {0:,} messages.'.format(messages_df.shape[0])
+    print('Loaded {0:,} messages.'.format(messages_df.shape[0]))
 
     # LOAD ADDRESS BOOK DATAFRAME
     address_book_df = get_address_book()
     # Drop a column that we don't use now, but may in the future.
     address_book_df = address_book_df.drop('property', axis=1)
-    print 'Loaded {0:,} contacts.'.format(address_book_df.shape[0])
+    print('Loaded {0:,} contacts.'.format(address_book_df.shape[0]))
 
     # JOIN THE MESSAGE AND ADDRESS BOOK DATAFRAMES
     fully_merged_messages_df = get_merged_message_df(messages_df, address_book_df)
@@ -270,11 +273,11 @@ def get_cleaned_fully_merged_messages():
                                                               'service_other_join_tbl'],
                                                                axis=1)
 
-    print 'Messages with phone numbers not found in address book: {0:,}'.format(
-        fully_merged_messages_df[fully_merged_messages_df.merge_chat_with_address != 'both'].shape[0])
+    print('Messages with phone numbers not found in address book: {0:,}'.format(
+        fully_merged_messages_df[fully_merged_messages_df.merge_chat_with_address != 'both'].shape[0]))
 
-    print ('Messages loaded: {0:,} (this is larger than the length of the messages table due to group '
-           'messages you sent)').format(fully_merged_messages_df.shape[0])
+    print(('Messages loaded: {0:,} (this is larger than the length of the messages table due to group '
+           'messages you sent)').format(fully_merged_messages_df.shape[0]))
 
     # Drop some columns that we're no longer going to need.
     fully_merged_messages_df = fully_merged_messages_df.drop(['merge_chat_with_address',
@@ -289,10 +292,10 @@ def get_cleaned_fully_merged_messages():
     fully_merged_messages_df.reset_index(inplace=True, drop=True)
     fully_merged_messages_df.index.name = 'row_index'  # Without this Excel will complain upon import.
 
-    print '\nPrinting columns of merged messages dataframe:'
-    print ', '.join(fully_merged_messages_df.columns.get_values())
-    print '\nPrinting columns of address book dataframe:'
-    print ', '.join(address_book_df.columns.get_values())
+    print('\nPrinting columns of merged messages dataframe:')
+    print(', '.join(fully_merged_messages_df.columns.get_values()))
+    print('\nPrinting columns of address book dataframe:')
+    print(', '.join(address_book_df.columns.get_values()))
     return fully_merged_messages_df, address_book_df
 
 if __name__ == "__main__":
@@ -320,7 +323,7 @@ if __name__ == "__main__":
         addresses_to_print.to_csv(os.path.join(args.output_directory, 'addresses.csv'), encoding='utf-8')
         messages_to_print.to_csv(os.path.join(args.output_directory, 'messages.csv'), encoding='utf-8')
     else:
-        print '\nADDRESS BOOK (output to CSV for full data):'
-        print addresses_to_print
-        print '\n\n\nMESSAGES (output to CSV for full data):'
-        print messages_to_print
+        print('\nADDRESS BOOK (output to CSV for full data):')
+        print(addresses_to_print)
+        print('\n\n\nMESSAGES (output to CSV for full data):')
+        print(messages_to_print)
