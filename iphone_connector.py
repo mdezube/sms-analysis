@@ -119,11 +119,33 @@ def initialize():
     # of the files within them.
     has_subdirectory_structure = MESSAGE_DB[:2] in os.listdir(_latest_sync_dir)
     if has_subdirectory_structure:
-        _message_con = sqlite3.connect(os.path.join(_latest_sync_dir, MESSAGE_DB[:2], MESSAGE_DB))
-        _address_con = sqlite3.connect(os.path.join(_latest_sync_dir, ADDRESS_DB[:2], ADDRESS_DB))
+        message_path = os.path.join(_latest_sync_dir, MESSAGE_DB[:2], MESSAGE_DB)
+        address_path = os.path.join(_latest_sync_dir, ADDRESS_DB[:2], ADDRESS_DB)
     else:
-        _message_con = sqlite3.connect(os.path.join(_latest_sync_dir, MESSAGE_DB))
-        _address_con = sqlite3.connect(os.path.join(_latest_sync_dir, ADDRESS_DB))
+        message_path = os.path.join(_latest_sync_dir, MESSAGE_DB)
+        address_path = os.path.join(_latest_sync_dir, ADDRESS_DB)
+
+    _message_con = sqlite3.connect(message_path)
+    _address_con = sqlite3.connect(address_path)
+
+    # Try to read from the DB files as a check if they are encrypted and raise exception accordingly
+    try:
+        t = ('table',)
+        _message_con.execute("SELECT name FROM SQLITE_MASTER where type=?", t)
+    except sqlite3.DatabaseError:
+        raise sqlite3.DatabaseError(
+            "A sqlite connection to the file at {0} failed, perhaps you've set iTunes to use encrypted backup?"
+            .format(message_path)
+        )
+    
+    try:
+        t = ('table',)
+        _address_con.execute("SELECT name FROM SQLITE_MASTER where type=?", t)
+    except sqlite3.DatabaseError:
+        raise sqlite3.DatabaseError(
+            "A sqlite connection to the file at {0} failed, perhaps you've set iTunes to use encrypted backup?"
+            .format(address_path)
+            )
 
 def get_message_df():
     """
@@ -132,22 +154,17 @@ def get_message_df():
     Returns:
         a pandas dataframe representing all text messages
     """
-    try:
-        messages_df = pd.read_sql_query('''
-        SELECT
-          ROWID as message_id, text, handle_id, country, service, version,
-          DATETIME(date, 'unixepoch', '31 years') AS date,
-          DATETIME(date_read, 'unixepoch', '31 years') AS date_read,
-          DATETIME(date_delivered, 'unixepoch', '31 years') AS date_delivered,
-          is_emote, is_from_me, is_read, is_system_message, is_service_message, is_sent,
-          has_dd_results
-        FROM message''', _message_con)
-    except pd.io.sql.DatabaseError:
-        raise pd.io.sql.DatabaseError(
-            "The backup files from your Iphone are encrypted.\n\t"
-            "Decrypt the files using Itunes and try again."
-            )
 
+    messages_df = pd.read_sql_query('''
+      SELECT
+        ROWID as message_id, text, handle_id, country, service, version,
+        DATETIME(date, 'unixepoch', '31 years') AS date,
+        DATETIME(date_read, 'unixepoch', '31 years') AS date_read,
+        DATETIME(date_delivered, 'unixepoch', '31 years') AS date_delivered,
+        is_emote, is_from_me, is_read, is_system_message, is_service_message, is_sent,
+        has_dd_results
+      FROM message''', _message_con)
+    
     messages_df = messages_df.set_index('message_id')
 
     # Convert a few columns to dates.
