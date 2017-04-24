@@ -22,6 +22,7 @@ except ImportError:
     from urllib import urlopen
 
 _messages_file = None
+
 _FB_ID_PATTERN = re.compile(r"(\d+)@facebook\.com")
 _mapped_fb_ids = {}
 
@@ -43,34 +44,41 @@ def initialize(dump_directory="."):
         _messages_file = None
 
 
-def resolve_user_id(user_id):
+def resolve_user_id(fb_provided_identifier):
     """
     Tries to map the identifier facebook provides to the name of the user
 
     Args:
-        user_id: identifier string that is provided in the messages file
+        fb_provided_identifier: identifier string that is provided in the messages file
+            This might be the user's name or his Facebook ID
 
     Returns:
         The name of the user if it is able to find it, otherwise the input
     """
-    fb_id_pattern_match = _FB_ID_PATTERN.match(user_id)
-    if fb_id_pattern_match:
-        fb_numeric_id = fb_id_pattern_match.group(1)
-        if fb_numeric_id not in _mapped_fb_ids:
-            username = fb_numeric_id
-            try:
-                fb_user_page = urlopen("https://www.facebook.com/{}".format(fb_numeric_id))
-                fb_page_title = BeautifulSoup(fb_user_page.read()).title.string
-                possible_username = fb_page_title.split("|")[0].strip()
-                if not (username.startswith('Security Check Required') or username.startswith('Page Not Found')):
-                    username = possible_username
-            except:
-                # Wasn't able to find the user - no harm done
-                pass
-            _mapped_fb_ids[fb_numeric_id] = username
+    fb_id_pattern_match = _FB_ID_PATTERN.match(fb_provided_identifier)
+    if not fb_id_pattern_match:
+        # fb_provided_identifier is already the name of the user
+        return fb_provided_identifier
+    fb_numeric_id = fb_id_pattern_match.group(1)
+    if fb_numeric_id in _mapped_fb_ids:
+        # We have looked the id up before, so just return the result
+        return _mapped_fb_ids[fb_numeric_id]
+    try:
+        # Try to find the user id
+        fb_user_page = urlopen("https://www.facebook.com/{}".format(fb_numeric_id))
+        fb_page_title = BeautifulSoup(fb_user_page.read()).title.string
+        possible_username = fb_page_title.split("|")[0].strip()
+        if (possible_username.startswith('Security Check Required') or
+            possible_username.startswith('Page Not Found')):
+            # At some point we probably issue to many request, then we have to give up
+            _mapped_fb_ids[fb_numeric_id] = fb_numeric_id
         else:
-            return _mapped_fb_ids[fb_numeric_id]
-    return user_id
+            # Here we know that possible_username is the user's name
+            _mapped_fb_ids[fb_numeric_id] = possible_username
+    except:
+        # Wasn't able to find the user - no harm done
+        _mapped_fb_ids[fb_numeric_id] = fb_numeric_id
+    return _mapped_fb_ids[fb_numeric_id]
 
 
 def get_cleaned_fully_merged_messages(strip_html_content=True,
@@ -83,7 +91,8 @@ def get_cleaned_fully_merged_messages(strip_html_content=True,
             option will remove all html markup
         resolve_fb_id: The messages.htm file doesn't always print Facebook names, but sometimes ids
             instead; this will attempt to resolve them, but requires a web request per id and is not
-            guaranteed to work
+            guaranteed to work. Note, that this method will not necessarily succeed, since facebook
+            blocks the number requests above a certain threshold.
 
     Returns:
         a dataframe that contains all messages with info about their senders
