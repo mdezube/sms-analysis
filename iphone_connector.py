@@ -128,24 +128,16 @@ def initialize():
     _message_con = sqlite3.connect(message_path)
     _address_con = sqlite3.connect(address_path)
 
-    # Try to read from the DB files as a check if they are encrypted and raise exception accordingly
+    # Try to read from the DB files as a check to see if they are encrypted.
+    # Checking if one of the tables is encrypted suffices because either all tables are encrypted or
+    # all tables are unencrypted.
     try:
-        t = ('table',)
-        _message_con.execute("SELECT name FROM SQLITE_MASTER where type=?", t)
+        _message_con.execute("SELECT name FROM SQLITE_MASTER where type='table'")
     except sqlite3.DatabaseError:
         raise sqlite3.DatabaseError(
             "A sqlite connection to the file at {0} failed, perhaps you've set iTunes to use encrypted backup?"
             .format(message_path)
         )
-    
-    try:
-        t = ('table',)
-        _address_con.execute("SELECT name FROM SQLITE_MASTER where type=?", t)
-    except sqlite3.DatabaseError:
-        raise sqlite3.DatabaseError(
-            "A sqlite connection to the file at {0} failed, perhaps you've set iTunes to use encrypted backup?"
-            .format(address_path)
-            )
 
 def get_message_df():
     """
@@ -154,7 +146,6 @@ def get_message_df():
     Returns:
         a pandas dataframe representing all text messages
     """
-
     messages_df = pd.read_sql_query('''
       SELECT
         ROWID as message_id, text, handle_id, country, service, version,
