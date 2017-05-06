@@ -138,7 +138,7 @@ def initialize():
         _message_con.execute("SELECT name FROM SQLITE_MASTER where type='table'")
     except sqlite3.DatabaseError:
         raise sqlite3.DatabaseError(
-            "A sqlite connection to the file at {0} failed, perhaps you've set iTunes to use encrypted backup?"
+            "A sqlite connection to the file at {0} failed, perhaps you've set iTunes to use an encrypted backup?"
             .format(message_path)
         )
 
