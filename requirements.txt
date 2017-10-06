@@ -10,3 +10,4 @@ Pillow >= 3.3.1
 nltk >= 3.1
 fbchat-archive-parser >= 0.8.post31
 beautifulsoup4 >= 4.5.3
+requests >= 2.18.4
