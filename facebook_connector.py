@@ -10,14 +10,14 @@ from a downloaded archive from facebook.com
 from __future__ import print_function
 
 from bs4 import BeautifulSoup
-from fbchat_archive_parser.parser import MessageHtmlParser
+from fbchat_archive_parser.parser import parse
 import logging
 import os
+import io
 import pandas as pd
 import re
 import requests
 import warnings
-
 
 _messages_file = None
 
@@ -34,12 +34,12 @@ def initialize(dump_directory="."):
         dump_directory: path to the directory that contains messages.htm file
     """
     global _messages_file
-    fb_message_filename = "messages.htm"
+    fb_message_filename = "html/messages.htm"
     _messages_file = os.path.join(dump_directory, fb_message_filename)
     if not os.path.isfile(_messages_file):
         print("""
             The directory provided did not contain messages.htm,
-            the directory is usually /html within the archive
+            the directory should be within the archive
             downloaded from facebook.com
         """)
         _messages_file = None
@@ -73,28 +73,22 @@ def resolve_user_id(fb_provided_identifier):
     try:
         # Try to find the user id
         fb_user_page = requests.get(
-            "https://www.facebook.com/{}".format(fb_numeric_id)
-        )
+            "https://www.facebook.com/{}".format(fb_numeric_id))
         fb_page_title = BeautifulSoup(fb_user_page.content).title.string
         possible_username = fb_page_title.split("|")[0].strip()
-        if ((possible_username.startswith('Security Check Required') or
-             possible_username.startswith('Page Not Found'))):
+        if ((possible_username.startswith('Security Check Required')
+             or possible_username.startswith('Page Not Found'))):
             # Mapping not found for this user, this likely is not transient
             # since the HTTP request validly returned, therefore do not retry
             _mapped_fb_ids[fb_numeric_id] = fb_numeric_id
             logging.info(
                 "Failed to lookup {0} via {1}, found result {2}".format(
-                    fb_provided_identifier, fb_numeric_id, fb_page_title
-                )
-            )
+                    fb_provided_identifier, fb_numeric_id, fb_page_title))
         else:
             # Here we know that possible_username is the user's name
             _mapped_fb_ids[fb_numeric_id] = possible_username
-            logging.debug(
-                "Mapped identifier {0} to {1}".format(
-                    fb_provided_identifier, possible_username
-                )
-            )
+            logging.debug("Mapped identifier {0} to {1}".format(
+                fb_provided_identifier, possible_username))
     except Exception as e:
         # Wasn't able to find the user - no harm done
         _mapped_fb_ids[fb_numeric_id] = fb_numeric_id
@@ -126,7 +120,9 @@ def get_cleaned_fully_merged_messages(strip_html_content=True,
     if not _messages_file:
         print("Please initialize the facebook_connector module.")
         return
-    chats = MessageHtmlParser(path=_messages_file).parse()
+    chats = None
+    with io.open(_messages_file, mode="rt", encoding="utf-8") as handle:
+        chats = parse(handle=handle)
     me = chats.user
     addresses = set()
     messages = []
