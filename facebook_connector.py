@@ -10,7 +10,7 @@ from a downloaded archive from facebook.com
 from __future__ import print_function
 
 from bs4 import BeautifulSoup
-from fbchat_archive_parser.parser import parse
+from fbchat_archive_parser import parser
 import logging
 import os
 import io
@@ -122,7 +122,7 @@ def get_cleaned_fully_merged_messages(strip_html_content=True,
         return
     chats = None
     with io.open(_messages_file, mode="rt", encoding="utf-8") as handle:
-        chats = parse(handle=handle)
+        chats = parser.parse(handle=handle)
     me = chats.user
     addresses = set()
     messages = []
