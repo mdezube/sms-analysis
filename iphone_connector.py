@@ -152,9 +152,18 @@ def get_message_df():
     messages_df = pd.read_sql_query('''
       SELECT
         ROWID as message_id, text, handle_id, country, service, version,
-        DATETIME(date, 'unixepoch', '31 years') AS date,
-        DATETIME(date_read, 'unixepoch', '31 years') AS date_read,
-        DATETIME(date_delivered, 'unixepoch', '31 years') AS date_delivered,
+        CASE
+          WHEN LENGTH(date) = 18 THEN DATETIME(SUBSTR(date, 1, 9), 'unixepoch', '31 years')
+          ELSE DATETIME(date, 'unixepoch', '31 years')
+        END AS date,
+        CASE
+          WHEN LENGTH(date_read) = 18 THEN DATETIME(SUBSTR(date_read, 1, 9), 'unixepoch', '31 years')
+          ELSE DATETIME(date_read, 'unixepoch', '31 years')
+        END AS date_read,
+        CASE
+          WHEN LENGTH(date_delivered) = 18 THEN DATETIME(SUBSTR(date_delivered, 1, 9), 'unixepoch', '31 years')
+          ELSE DATETIME(date_delivered, 'unixepoch', '31 years')
+        END AS date_delivered,
         is_emote, is_from_me, is_read, is_system_message, is_service_message, is_sent,
         has_dd_results
       FROM message''', _message_con)
