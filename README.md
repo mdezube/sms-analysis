@@ -78,3 +78,8 @@ that cell, under menu choose: Cell --> Run Cell
 <div align="center">
     <img height="400" src="https://raw.githubusercontent.com/mdezube/sms-analysis/master/tfidf_diff_screenshot.png"></img>
 </div>
+
+## Example of Clustering
+<div align="center">
+    <img height="400" src="https://raw.githubusercontent.com/mdezube/sms-analysis/master/clustered.png"></img>
+</div>
