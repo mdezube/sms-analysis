@@ -316,9 +316,9 @@ def get_cleaned_fully_merged_messages():
     fully_merged_messages_df.index.name = 'row_index'  # Without this Excel will complain upon import.
 
     print('\nPrinting columns of merged messages dataframe:')
-    print(', '.join(fully_merged_messages_df.columns.get_values()))
+    print(', '.join(fully_merged_messages_df.columns.to_numpy()))
     print('\nPrinting columns of address book dataframe:')
-    print(', '.join(address_book_df.columns.get_values()))
+    print(', '.join(address_book_df.columns.to_numpy()))
     return fully_merged_messages_df, address_book_df
 
 if __name__ == "__main__":
